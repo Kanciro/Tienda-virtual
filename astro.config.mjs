@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import vercel from '@astrojs/vercel/serverless'; // Se debió añadir esto
+import vercel from '@astrojs/vercel'; // <--- QUITA el "/serverless" de aquí
 
 export default defineConfig({
   integrations: [tailwind()],
-  output: 'server',              // Esto ya lo teníamos
-  adapter: vercel(),             // Esto es lo que soluciona el error
+  output: 'server',
+  adapter: vercel(), // <--- Déjalo así, sin parámetros extra por ahora
 });
