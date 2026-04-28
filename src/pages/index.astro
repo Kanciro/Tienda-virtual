@@ -1,11 +1,78 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import { supabase } from '../lib/supabase';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { data: productos } = await supabase.from('productos').select('*');
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Starla | Home ✨">
+    <header class="py-16 text-center bg-gradient-to-b from-pink-50 to-transparent">
+        <h2 class="text-5xl font-extrabold text-gray-800 mb-4 tracking-tight">Tu brillo, nuestra esencia</h2>
+        <p class="text-pink-400 font-medium tracking-[0.2em] uppercase text-sm">Aesthetic & Coquette Collection</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-20">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {productos?.map((item) => (
+                <div class="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-pink-50 flex flex-col">
+                    {/* El enlace ahora solo envuelve la imagen y el título */}
+                    <a href={`/producto/${item.id}`} class="block overflow-hidden aspect-square">
+                        <img 
+                            src={item.imagen_principal} 
+                            alt={item.nombre}
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                        />
+                    </a>
+                    
+                    <div class="p-8 flex flex-col flex-grow">
+                        <a href={`/producto/${item.id}`}>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2 hover:text-pink-500 transition-colors">
+                                {item.nombre}
+                            </h3>
+                        </a>
+                        
+                        <div class="flex justify-between items-center mt-auto">
+                            <span class="text-2xl font-black text-pink-500">
+                                ${Number(item.precio).toLocaleString('es-CO')}
+                            </span>
+                            
+                            {/* BOTÓN DE AGREGAR */}
+                            <button 
+                                data-product={JSON.stringify(item)}
+                                class="add-to-cart bg-gray-900 text-white px-6 py-2 rounded-full hover:bg-pink-500 transition-all duration-300 text-sm font-bold shadow-lg active:scale-95"
+                            >
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </main>
+
+    <script>
+        import { addCartItem } from '../store/cartStore';
+
+        const buttons = document.querySelectorAll('.add-to-cart');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Evitamos que el clic se propague (por si acaso)
+                e.preventDefault();
+                
+                const item = JSON.parse(button.getAttribute('data-product'));
+                addCartItem(item);
+                
+                // Animación simple de confirmación
+                const originalText = button.textContent;
+                button.textContent = '¡Listo! ✨';
+                button.classList.replace('bg-gray-900', 'bg-green-500');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.replace('bg-green-500', 'bg-gray-900');
+                }, 1500);
+            });
+        });
+    </script>
 </Layout>

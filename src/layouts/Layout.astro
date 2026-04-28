@@ -1,23 +1,64 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+---
+import CartDrawer from '../components/CartDrawer.astro';
+import { cartItems } from '../store/cartStore';
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Star la Manoir - Tienda de Maquillaje y Accesorios" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>{title}</title>
+    </head>
+    <body class="bg-[#fff5f7] min-h-screen font-sans">
+        <nav class="bg-white/80 backdrop-blur-md border-b border-pink-100 p-4 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <a href="/" class="text-2xl font-serif font-bold text-pink-500 italic">Star la Manoir</a>
+                <div class="flex items-center space-x-6 text-gray-600 font-medium">
+                    <a href="/" class="hover:text-pink-400 transition">Inicio</a>
+                    <a href="/productos" class="hover:text-pink-400 transition">Productos</a>
+                    
+                    <button id="cart-button" class="relative p-2 hover:bg-pink-50 rounded-full transition cursor-pointer">
+                        <span class="text-2xl">🛒</span>
+                        <span id="cart-count" class="absolute top-0 right-0 bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <slot />
+
+        <footer class="bg-white border-t border-pink-100 py-10 mt-20">
+            <div class="max-w-6xl mx-auto px-4 text-center">
+                <p class="text-pink-500 font-serif italic text-xl mb-4">Star la Manoir</p>
+                <p class="text-gray-400 text-sm">© 2026 - Hecho con amor para una estrella.</p>
+            </div>
+        </footer>
+
+        <CartDrawer />
+
+        <script>
+            import { cartItems } from '../store/cartStore';
+
+            const cartCount = document.getElementById('cart-count');
+
+            cartItems.subscribe((items) => {
+                const total = Object.values(items).reduce((acc, item) => acc + item.quantity, 0);
+                if (total > 0) {
+                    cartCount.textContent = total.toString();
+                    cartCount.classList.remove('hidden');
+                } else {
+                    cartCount.classList.add('hidden');
+                }
+            });
+        </script>
+    </body>
+</html>

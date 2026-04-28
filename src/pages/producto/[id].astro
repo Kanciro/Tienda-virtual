@@ -1,0 +1,94 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase';
+// 1. Obtenemos el ID de la URL y buscamos el producto en Supabase
+const { id } = Astro.params;
+const { data: item } = await supabase
+  .from('productos')
+  .select('*')
+  .eq('id', id)
+  .single();
+
+// Si el producto no existe, redirigimos al inicio
+if (!item) {
+  return Astro.redirect('/');
+}
+---
+
+<Layout title={`${item.nombre} | Star la Manoir ✨`}>
+  <main class="max-w-6xl mx-auto px-4 py-12">
+    <a href="/" class="text-pink-400 hover:text-pink-600 transition-colors mb-8 inline-block font-medium">
+      ← Volver al catálogo
+    </a>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+      <div class="bg-white rounded-[3rem] overflow-hidden shadow-sm border border-pink-50 sticky top-28">
+        <img 
+          src={item.imagen_principal} 
+          alt={item.nombre} 
+          class="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
+        />
+      </div>
+
+      <div class="flex flex-col space-y-8">
+        <div>
+          <p class="text-pink-400 font-bold tracking-widest uppercase text-xs mb-2">Producto Estrella</p>
+          <h1 class="text-5xl font-serif font-bold text-gray-800 leading-tight">
+            {item.nombre}
+          </h1>
+          <p class="text-3xl font-black text-pink-500 mt-4">
+            ${Number(item.precio).toLocaleString('es-CO')}
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="font-bold text-gray-800 text-lg">Descripción</h3>
+          <p class="text-gray-500 leading-relaxed text-lg italic">
+            {item.descripcion || "Este producto está diseñado para resaltar tu belleza natural con el toque mágico de Star la Manoir."}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 py-6 border-y border-pink-50">
+          <div class="flex items-center gap-3">
+            <span class="bg-pink-100 p-2 rounded-full">✨</span>
+            <span class="text-sm font-medium text-gray-600">Aesthetic Style</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="bg-pink-100 p-2 rounded-full">💖</span>
+            <span class="text-sm font-medium text-gray-600">Hecho con amor</span>
+          </div>
+        </div>
+
+        <button 
+          id="add-from-details"
+          data-product={JSON.stringify(item)}
+          class="w-full bg-gray-900 text-white py-5 rounded-3xl font-bold text-xl hover:bg-pink-500 transition-all shadow-xl shadow-pink-100 active:scale-95"
+        >
+          Agregar al carrito
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    import { addCartItem } from '../../store/cartStore';
+
+    const btn = document.getElementById('add-from-details');
+
+    btn?.addEventListener('click', () => {
+      const item = JSON.parse(btn.getAttribute('data-product'));
+      addCartItem(item);
+      
+      // Animación de feedback
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '¡Añadido! ✨';
+      btn.classList.replace('bg-gray-900', 'bg-green-500');
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.replace('bg-green-500', 'bg-gray-900');
+      }, 1500);
+    });
+  </script>
+</Layout>
